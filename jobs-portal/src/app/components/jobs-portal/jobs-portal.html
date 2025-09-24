@@ -1,0 +1,85 @@
+<div class="jobs-portal">
+  <!-- Header -->
+  <header class="portal-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="portal-title">Job Portal</h1>
+        <p class="portal-subtitle">Discover your next career opportunity</p>
+      </div>
+      <div class="header-actions">
+        <button 
+          class="refresh-button" 
+          (click)="refreshJobs()" 
+          [disabled]="loading"
+          type="button"
+          title="Refresh jobs">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+            <path d="M3 21v-5h5"/>
+          </svg>
+          <span class="refresh-text">Refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category Tabs -->
+  <div class="category-section">
+    <app-category-tabs 
+      (categorySelected)="onCategorySelected($event)">
+    </app-category-tabs>
+  </div>
+
+  <!-- Main Content Area -->
+  <main class="portal-main">
+    <!-- Results Summary -->
+    <div class="results-summary" *ngIf="!loading">
+      <div class="summary-content">
+        <h2 class="results-count">
+          {{ totalJobs }} {{ totalJobs === 1 ? 'Job' : 'Jobs' }} Found
+        </h2>
+        <p class="results-description">
+          Showing {{ currentCategory | titlecase }} jobs
+          <span *ngIf="totalPages > 1"> - Page {{ currentPage }} of {{ totalPages }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Job List -->
+    <div class="job-list-section">
+      <app-job-list 
+        [jobs]="jobs" 
+        [loading]="loading">
+      </app-job-list>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="!loading && jobs.length > 0">
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="totalJobs"
+        [itemsPerPage]="itemsPerPage"
+        [disabled]="loading"
+        (pageChange)="onPageChanged($event)">
+      </app-pagination>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="portal-footer">
+    <div class="footer-content">
+      <p class="footer-text">
+        © 2025 Job Portal. Connecting talent with opportunity.
+      </p>
+      <div class="footer-links">
+        <a href="#" class="footer-link">About</a>
+        <a href="#" class="footer-link">Contact</a>
+        <a href="#" class="footer-link">Privacy</a>
+        <a href="#" class="footer-link">Terms</a>
+      </div>
+    </div>
+  </footer>
+</div>

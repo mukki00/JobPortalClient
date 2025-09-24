@@ -1,0 +1,17 @@
+<div class="category-tabs-container">
+  <div class="tabs-wrapper">
+    <div class="tabs-scroll">
+      <div class="tab-buttons">
+        <button 
+          *ngFor="let category of categories" 
+          class="tab-button"
+          [class.active]="isActive(category.key)"
+          (click)="selectCategory(category.key)"
+          type="button">
+          {{ category.label }}
+          <span *ngIf="category.count" class="count-badge">{{ category.count }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,101 @@
+<div class="pagination-container" *ngIf="totalPages > 1">
+  <!-- Results Info -->
+  <div class="pagination-info">
+    <span class="results-text">
+      Showing {{ getStartItem() }}-{{ getEndItem() }} of {{ totalItems }} jobs
+    </span>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="pagination-controls">
+    <!-- First Page Button -->
+    <button 
+      class="pagination-btn pagination-btn-nav"
+      [disabled]="currentPage === 1 || disabled"
+      (click)="goToFirst()"
+      type="button"
+      title="First page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>
+      </svg>
+    </button>
+
+    <!-- Previous Button -->
+    <button 
+      class="pagination-btn pagination-btn-nav"
+      [disabled]="!canGoPrevious()"
+      (click)="goToPrevious()"
+      type="button"
+      title="Previous page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      <span class="nav-text">Previous</span>
+    </button>
+
+    <!-- Page Numbers -->
+    <div class="page-numbers">
+      <!-- Show first page if not in visible range -->
+      <button 
+        *ngIf="visiblePages[0] > 1"
+        class="pagination-btn pagination-btn-page"
+        [disabled]="disabled"
+        (click)="goToPage(1)"
+        type="button">
+        1
+      </button>
+      
+      <!-- Show ellipsis if there's a gap -->
+      <span *ngIf="visiblePages[0] > 2" class="pagination-ellipsis">...</span>
+      
+      <!-- Visible page numbers -->
+      <button 
+        *ngFor="let page of visiblePages"
+        class="pagination-btn pagination-btn-page"
+        [class.active]="page === currentPage"
+        [disabled]="disabled"
+        (click)="goToPage(page)"
+        type="button">
+        {{ page }}
+      </button>
+      
+      <!-- Show ellipsis if there's a gap -->
+      <span *ngIf="visiblePages[visiblePages.length - 1] < totalPages - 1" class="pagination-ellipsis">...</span>
+      
+      <!-- Show last page if not in visible range -->
+      <button 
+        *ngIf="visiblePages[visiblePages.length - 1] < totalPages"
+        class="pagination-btn pagination-btn-page"
+        [disabled]="disabled"
+        (click)="goToPage(totalPages)"
+        type="button">
+        {{ totalPages }}
+      </button>
+    </div>
+
+    <!-- Next Button -->
+    <button 
+      class="pagination-btn pagination-btn-nav"
+      [disabled]="!canGoNext()"
+      (click)="goToNext()"
+      type="button"
+      title="Next page">
+      <span class="nav-text">Next</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+
+    <!-- Last Page Button -->
+    <button 
+      class="pagination-btn pagination-btn-nav"
+      [disabled]="currentPage === totalPages || disabled"
+      (click)="goToLast()"
+      type="button"
+      title="Last page">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>
+      </svg>
+    </button>
+  </div>
+</div>

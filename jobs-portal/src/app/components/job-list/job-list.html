@@ -1,0 +1,90 @@
+<div class="job-list-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading jobs...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && jobs.length === 0" class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No jobs found</h3>
+    <p>Try selecting a different category or check back later for new opportunities.</p>
+  </div>
+
+  <!-- Job Cards -->
+  <div *ngIf="!loading && jobs.length > 0" class="jobs-grid">
+    <div *ngFor="let job of jobs" class="job-card">
+      <div class="job-header">
+        <div class="company-info">
+          <img *ngIf="job.companyLogo" [src]="job.companyLogo" [alt]="job.company" class="company-logo">
+          <div class="company-placeholder" *ngIf="!job.companyLogo">
+            {{ job.company.charAt(0).toUpperCase() }}
+          </div>
+          <div class="job-basic-info">
+            <h3 class="job-title">{{ job.title }}</h3>
+            <p class="company-name">{{ job.company }}</p>
+          </div>
+        </div>
+        <div class="job-meta">
+          <span class="job-location">📍 {{ job.location }}</span>
+          <span class="job-posted">{{ formatDate(job.postedDate) }}</span>
+        </div>
+      </div>
+
+      <div class="job-body">
+        <p class="job-description">{{ truncateDescription(job.description) }}</p>
+        
+        <div class="job-details">
+          <div class="job-type-salary">
+            <span class="job-type" [class]="getJobTypeClass(job.type)">{{ job.type }}</span>
+            <span *ngIf="job.salary" class="job-salary">💰 {{ job.salary }}</span>
+          </div>
+          
+          <div *ngIf="job.experience" class="job-experience">
+            <span class="experience-badge">📊 {{ job.experience }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="job.tags && job.tags.length > 0" class="job-tags">
+          <span *ngFor="let tag of job.tags" class="job-tag">{{ tag }}</span>
+        </div>
+
+        <div *ngIf="job.requirements && job.requirements.length > 0" class="job-requirements">
+          <h4>Requirements:</h4>
+          <ul>
+            <li *ngFor="let requirement of job.requirements.slice(0, 3)">{{ requirement }}</li>
+            <li *ngIf="job.requirements.length > 3" class="more-requirements">
+              +{{ job.requirements.length - 3 }} more
+            </li>
+          </ul>
+        </div>
+
+        <div *ngIf="job.benefits && job.benefits.length > 0" class="job-benefits">
+          <h4>Benefits:</h4>
+          <div class="benefits-list">
+            <span *ngFor="let benefit of job.benefits.slice(0, 3)" class="benefit-tag">{{ benefit }}</span>
+            <span *ngIf="job.benefits.length > 3" class="more-benefits">
+              +{{ job.benefits.length - 3 }} more
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-footer">
+        <button class="apply-button" (click)="openJobApplication(job)">
+          <span>Apply Now</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 17l9.2-9.2M17 17V7H7"/>
+          </svg>
+        </button>
+        <button class="save-button" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
