@@ -17,57 +17,25 @@
     <div *ngFor="let job of jobs" class="job-card">
       <div class="job-header">
         <div class="company-info">
-          <img *ngIf="job.companyLogo" [src]="job.companyLogo" [alt]="job.company" class="company-logo">
-          <div class="company-placeholder" *ngIf="!job.companyLogo">
-            {{ job.company.charAt(0).toUpperCase() }}
+          <div class="company-placeholder">
+            {{ job.COMPANY.charAt(0).toUpperCase() }}
           </div>
           <div class="job-basic-info">
-            <h3 class="job-title">{{ job.title }}</h3>
-            <p class="company-name">{{ job.company }}</p>
+            <h3 class="job-title">{{ job.JOB_TITLE }}</h3>
+            <p class="company-name">{{ job.COMPANY }}</p>
           </div>
         </div>
         <div class="job-meta">
-          <span class="job-location">📍 {{ job.location }}</span>
-          <span class="job-posted">{{ formatDate(job.postedDate) }}</span>
+          <span class="job-location">📍 {{ job.COMPANY_LOCATION }}</span>
+          <span class="job-category">🏷️ {{ job.JOB_CATEGORY }}</span>
+          <span class="job-type">{{ job.JOB_TYPE }}</span>
         </div>
       </div>
 
       <div class="job-body">
-        <p class="job-description">{{ truncateDescription(job.description) }}</p>
-        
         <div class="job-details">
-          <div class="job-type-salary">
-            <span class="job-type" [class]="getJobTypeClass(job.type)">{{ job.type }}</span>
-            <span *ngIf="job.salary" class="job-salary">💰 {{ job.salary }}</span>
-          </div>
-          
-          <div *ngIf="job.experience" class="job-experience">
-            <span class="experience-badge">📊 {{ job.experience }}</span>
-          </div>
-        </div>
-
-        <div *ngIf="job.tags && job.tags.length > 0" class="job-tags">
-          <span *ngFor="let tag of job.tags" class="job-tag">{{ tag }}</span>
-        </div>
-
-        <div *ngIf="job.requirements && job.requirements.length > 0" class="job-requirements">
-          <h4>Requirements:</h4>
-          <ul>
-            <li *ngFor="let requirement of job.requirements.slice(0, 3)">{{ requirement }}</li>
-            <li *ngIf="job.requirements.length > 3" class="more-requirements">
-              +{{ job.requirements.length - 3 }} more
-            </li>
-          </ul>
-        </div>
-
-        <div *ngIf="job.benefits && job.benefits.length > 0" class="job-benefits">
-          <h4>Benefits:</h4>
-          <div class="benefits-list">
-            <span *ngFor="let benefit of job.benefits.slice(0, 3)" class="benefit-tag">{{ benefit }}</span>
-            <span *ngIf="job.benefits.length > 3" class="more-benefits">
-              +{{ job.benefits.length - 3 }} more
-            </span>
-          </div>
+          <span class="job-source">Source: {{ job.JOB_SOURCE }}</span>
+          <span *ngIf="job.LINKEDIN_VERIFIED === 'Y'" class="linkedin-verified">✔ LinkedIn Verified</span>
         </div>
       </div>
 

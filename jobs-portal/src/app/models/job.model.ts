@@ -1,19 +1,14 @@
 export interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  description: string;
-  requirements?: string[];
-  salary?: string;
-  type: 'full-time' | 'part-time' | 'contract' | 'remote' | 'hybrid';
-  category: string;
-  postedDate: string;
-  applicationUrl?: string;
-  tags?: string[];
-  experience?: string;
-  benefits?: string[];
-  companyLogo?: string;
+  APPLIED: string;
+  COMPANY: string;
+  COMPANY_LOCATION: string;
+  JOB_CATEGORY: string;
+  JOB_ID: number;
+  JOB_LINK: string;
+  JOB_SOURCE: string;
+  JOB_TITLE: string;
+  JOB_TYPE: string;
+  LINKEDIN_VERIFIED: string;
 }
 
 export interface JobsResponse {
@@ -33,19 +28,19 @@ export interface JobCategory {
 }
 
 export const JOB_CATEGORIES: JobCategory[] = [
-  { key: 'recommended', label: 'Recommended' },
-  { key: 'easy-apply', label: 'Easy Apply' },
-  { key: 'remote-jobs', label: 'Remote Jobs' },
-  { key: 'it-services-and-it-consulting', label: 'IT Services & Consulting' },
-  { key: 'human-resources', label: 'Human Resources' },
-  { key: 'financial-services', label: 'Financial Services' },
-  { key: 'sustainability', label: 'Sustainability' },
-  { key: 'hybrid', label: 'Hybrid' },
-  { key: 'pharmaceuticals', label: 'Pharmaceuticals' },
-  { key: 'part-time-jobs', label: 'Part Time Jobs' },
-  { key: 'social-impact', label: 'Social Impact' },
-  { key: 'manufacturing', label: 'Manufacturing' },
-  { key: 'real-estate', label: 'Real Estate' },
-  { key: 'hospitals-and-healthcare', label: 'Healthcare & Hospitals' },
-  { key: 'government', label: 'Government' }
+  { key: 'Recommended', label: 'Recommended' },
+  { key: 'Easy Apply', label: 'Easy Apply' },
+  { key: 'Remote', label: 'Remote Jobs' },
+  { key: 'IT', label: 'IT Services & Consulting' },
+  { key: 'HR', label: 'Human Resources' },
+  { key: 'Finance', label: 'Financial Services' },
+  { key: 'Sustainability', label: 'Sustainability' },
+  { key: 'Hybrid', label: 'Hybrid' },
+  { key: 'Pharma', label: 'Pharmaceuticals' },
+  { key: 'Part-time', label: 'Part Time Jobs' },
+  { key: 'Social impact', label: 'Social Impact' },
+  { key: 'Manufacturing', label: 'Manufacturing' },
+  { key: 'Real estate', label: 'Real Estate' },
+  { key: 'Healthcare', label: 'Healthcare & Hospitals' },
+  { key: 'Government', label: 'Government' }
 ];

@@ -12,8 +12,8 @@ export class JobService {
   
   // State management
   private currentPageSubject = new BehaviorSubject<number>(1);
-  private currentCategorySubject = new BehaviorSubject<string>('recommended');
-  private loadingSubject = new BehaviorSubject<boolean>(false);
+  private currentCategorySubject = new BehaviorSubject<string>('Recommended');
+  public loadingSubject = new BehaviorSubject<boolean>(false);
   
   public currentPage$ = this.currentPageSubject.asObservable();
   public currentCategory$ = this.currentCategorySubject.asObservable();
@@ -22,8 +22,8 @@ export class JobService {
   /**
    * Fetch jobs from the API with pagination and category filtering
    */
-  getJobs(page: number = 1, perPage: number = 50, category: string = 'recommended'): Observable<JobsResponse> {
-    this.loadingSubject.next(true);
+  getJobs(page: number = 1, perPage: number = 50, category: string = 'Recommended'): Observable<JobsResponse> {
+    this.loadingSubject.next(false);
     
     let params = new HttpParams()
       .set('page', page.toString())
@@ -91,61 +91,73 @@ export class JobService {
   private getMockJobsResponse(page: number, perPage: number, category: string): JobsResponse {
     const mockJobs: Job[] = [
       {
-        id: 1,
-        title: 'Senior Frontend Developer',
-        company: 'TechCorp Inc.',
-        location: 'San Francisco, CA',
-        description: 'We are looking for a Senior Frontend Developer to join our dynamic team...',
-        requirements: ['React', 'TypeScript', 'CSS3', 'Angular'],
-        salary: '$120,000 - $150,000',
-        type: 'full-time',
-        category: category,
-        postedDate: '2025-09-20',
-        applicationUrl: 'https://example.com/apply/1',
-        tags: ['React', 'Frontend', 'JavaScript'],
-        experience: '5+ years',
-        benefits: ['Health Insurance', 'Remote Work', '401k']
+        APPLIED: "N",
+        COMPANY: "Jonas Software",
+        COMPANY_LOCATION: "Colombo, Western Province, Sri Lanka",
+        JOB_CATEGORY: category,
+        JOB_ID: 4010384565,
+        JOB_LINK: "https://www.linkedin.com/jobs/view/4010384565/",
+        JOB_SOURCE: "LinkedIn",
+        JOB_TITLE: "Senior QA Automation Engineer",
+        JOB_TYPE: "On-site",
+        LINKEDIN_VERIFIED: "Y"
       },
       {
-        id: 2,
-        title: 'DevOps Engineer',
-        company: 'CloudTech Solutions',
-        location: 'Remote',
-        description: 'Join our DevOps team to build and maintain scalable cloud infrastructure...',
-        requirements: ['AWS', 'Docker', 'Kubernetes', 'CI/CD'],
-        salary: '$110,000 - $140,000',
-        type: 'remote',
-        category: category,
-        postedDate: '2025-09-19',
-        applicationUrl: 'https://example.com/apply/2',
-        tags: ['DevOps', 'AWS', 'Docker'],
-        experience: '3+ years',
-        benefits: ['Flexible Hours', 'Learning Budget', 'Stock Options']
+        APPLIED: "N",
+        COMPANY: "Appetiser Apps",
+        COMPANY_LOCATION: "Sri Lanka",
+        JOB_CATEGORY: category,
+        JOB_ID: 4061065976,
+        JOB_LINK: "https://www.linkedin.com/jobs/view/4061065976/",
+        JOB_SOURCE: "LinkedIn",
+        JOB_TITLE: "Full-Stack Developer (Laravel & VueJS)",
+        JOB_TYPE: "Remote",
+        LINKEDIN_VERIFIED: "Y"
       },
       {
-        id: 3,
-        title: 'Product Manager',
-        company: 'InnovateLabs',
-        location: 'New York, NY',
-        description: 'Lead product strategy and development for our cutting-edge platform...',
-        requirements: ['Product Strategy', 'Agile', 'Analytics', 'Leadership'],
-        salary: '$130,000 - $160,000',
-        type: 'hybrid',
-        category: category,
-        postedDate: '2025-09-18',
-        applicationUrl: 'https://example.com/apply/3',
-        tags: ['Product Management', 'Strategy', 'Agile'],
-        experience: '4+ years',
-        benefits: ['Health Insurance', 'Hybrid Work', 'Equity']
+        APPLIED: "N",
+        COMPANY: "Riskonnect, Inc.",
+        COMPANY_LOCATION: "Colombo, Western Province, Sri Lanka",
+        JOB_CATEGORY: category,
+        JOB_ID: 4085645634,
+        JOB_LINK: "https://www.linkedin.com/jobs/view/4085645634/",
+        JOB_SOURCE: "LinkedIn",
+        JOB_TITLE: "Senior Software Engineer - .Net + Angular",
+        JOB_TYPE: "Remote",
+        LINKEDIN_VERIFIED: "Y"
+      },
+      {
+        APPLIED: "N",
+        COMPANY: "TechCorp Solutions",
+        COMPANY_LOCATION: "Kandy, Central Province, Sri Lanka",
+        JOB_CATEGORY: category,
+        JOB_ID: 4000000001,
+        JOB_LINK: "https://www.linkedin.com/jobs/view/4000000001/",
+        JOB_SOURCE: "LinkedIn",
+        JOB_TITLE: "React Frontend Developer",
+        JOB_TYPE: "Hybrid",
+        LINKEDIN_VERIFIED: "Y"
+      },
+      {
+        APPLIED: "Y",
+        COMPANY: "CloudTech Industries",
+        COMPANY_LOCATION: "Galle, Southern Province, Sri Lanka",
+        JOB_CATEGORY: category,
+        JOB_ID: 4000000002,
+        JOB_LINK: "https://www.linkedin.com/jobs/view/4000000002/",
+        JOB_SOURCE: "LinkedIn",
+        JOB_TITLE: "DevOps Engineer",
+        JOB_TYPE: "Remote",
+        LINKEDIN_VERIFIED: "N"
       }
     ];
 
     // Simulate different jobs for different categories
-    const categorySpecificJobs = mockJobs.map(job => ({
+    const categorySpecificJobs = mockJobs.map((job, index) => ({
       ...job,
-      id: job.id + (page - 1) * perPage,
-      title: `${job.title} - ${category}`,
-      category: category
+      JOB_ID: job.JOB_ID + (page - 1) * perPage + index,
+      JOB_CATEGORY: category,
+      JOB_TITLE: `${job.JOB_TITLE} - ${category}`
     }));
 
     return {

@@ -15,7 +15,7 @@ export class CategoryTabsComponent implements OnInit {
   private jobService = inject(JobService);
   
   categories: JobCategory[] = JOB_CATEGORIES;
-  activeCategory: string = 'recommended';
+  activeCategory: string = 'Recommended';
   
   ngOnInit() {
     // Subscribe to current category from service

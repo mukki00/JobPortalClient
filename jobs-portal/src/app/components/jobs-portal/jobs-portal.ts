@@ -5,6 +5,7 @@ import { Job, JobsResponse } from '../../models/job.model';
 import { CategoryTabsComponent } from '../category-tabs/category-tabs';
 import { JobListComponent } from '../job-list/job-list';
 import { PaginationComponent } from '../pagination/pagination';
+import { log } from 'console';
 
 @Component({
   selector: 'app-jobs-portal',
@@ -25,13 +26,13 @@ export class JobsPortalComponent implements OnInit {
   currentPage: number = 1;
   totalPages: number = 1;
   totalJobs: number = 0;
-  currentCategory: string = 'recommended';
+  currentCategory: string = 'Recommended';
   itemsPerPage: number = 50;
   
   ngOnInit() {
     // Subscribe to service state
     this.jobService.loading$.subscribe(loading => {
-      this.loading = loading;
+      this.loading = false;
     });
     
     this.jobService.currentPage$.subscribe(page => {
@@ -68,6 +69,7 @@ export class JobsPortalComponent implements OnInit {
           this.totalJobs = response.totalJobs;
           this.totalPages = response.totalPages;
           this.currentPage = response.currentPage;
+          this.jobService.loadingSubject.next(false);
         },
         error: (error) => {
           console.error('Error loading jobs:', error);
