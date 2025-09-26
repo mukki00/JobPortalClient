@@ -8,7 +8,7 @@ import { Job, JobsResponse } from '../models/job.model';
 })
 export class JobService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:5000';
+  private baseUrl = 'http://localhost:5000'; // Direct API calls - ensure CORS is enabled on backend
   
   // State management
   private currentPageSubject = new BehaviorSubject<number>(1);
