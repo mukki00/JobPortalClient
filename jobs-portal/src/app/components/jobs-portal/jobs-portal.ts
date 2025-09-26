@@ -1,11 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { JobService } from '../../services/job.service';
 import { Job, JobsResponse } from '../../models/job.model';
 import { CategoryTabsComponent } from '../category-tabs/category-tabs';
 import { JobListComponent } from '../job-list/job-list';
 import { PaginationComponent } from '../pagination/pagination';
-import { log } from 'console';
 
 @Component({
   selector: 'app-jobs-portal',
@@ -20,6 +19,7 @@ import { log } from 'console';
 })
 export class JobsPortalComponent implements OnInit {
   private jobService = inject(JobService);
+  private cdr = inject(ChangeDetectorRef);
   
   jobs: Job[] = [];
   loading: boolean = false;
@@ -30,11 +30,6 @@ export class JobsPortalComponent implements OnInit {
   itemsPerPage: number = 50;
   
   ngOnInit() {
-    // Subscribe to service state
-    this.jobService.loading$.subscribe(loading => {
-      this.loading = false;
-    });
-    
     this.jobService.currentPage$.subscribe(page => {
       this.currentPage = page;
     });
@@ -50,11 +45,14 @@ export class JobsPortalComponent implements OnInit {
   onCategorySelected(category: string) {
     this.currentCategory = category;
     this.currentPage = 1; // Reset to first page when changing category
+    this.jobService.setCurrentCategory(category);
+    this.jobService.setCurrentPage(1);
     this.loadJobs();
   }
   
   onPageChanged(page: number) {
     this.currentPage = page;
+    this.jobService.setCurrentPage(page);
     this.loadJobs();
     
     // Scroll to top when page changes
@@ -62,6 +60,8 @@ export class JobsPortalComponent implements OnInit {
   }
   
   private loadJobs() {
+    this.loading = true;
+    
     this.jobService.getJobs(this.currentPage, this.itemsPerPage, this.currentCategory)
       .subscribe({
         next: (response: JobsResponse) => {
@@ -69,11 +69,13 @@ export class JobsPortalComponent implements OnInit {
           this.totalJobs = response.totalJobs;
           this.totalPages = response.totalPages;
           this.currentPage = response.currentPage;
-          this.jobService.loadingSubject.next(false);
+          this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (error) => {
           console.error('Error loading jobs:', error);
-          // Error handling could show a toast notification here
+          this.loading = false;
+          this.cdr.detectChanges();
         }
       });
   }

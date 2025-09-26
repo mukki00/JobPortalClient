@@ -41,7 +41,7 @@
           {{ totalJobs }} {{ totalJobs === 1 ? 'Job' : 'Jobs' }} Found
         </h2>
         <p class="results-description">
-          Showing {{ currentCategory | titlecase }} jobs
+          Showing {{ currentCategory | uppercase }} jobs
           <span *ngIf="totalPages > 1"> - Page {{ currentPage }} of {{ totalPages }}</span>
         </p>
       </div>

@@ -13,18 +13,14 @@ export class JobService {
   // State management
   private currentPageSubject = new BehaviorSubject<number>(1);
   private currentCategorySubject = new BehaviorSubject<string>('Recommended');
-  public loadingSubject = new BehaviorSubject<boolean>(false);
   
   public currentPage$ = this.currentPageSubject.asObservable();
   public currentCategory$ = this.currentCategorySubject.asObservable();
-  public loading$ = this.loadingSubject.asObservable();
 
   /**
    * Fetch jobs from the API with pagination and category filtering
    */
   getJobs(page: number = 1, perPage: number = 50, category: string = 'Recommended'): Observable<JobsResponse> {
-    this.loadingSubject.next(false);
-    
     let params = new HttpParams()
       .set('page', page.toString())
       .set('per_page', perPage.toString());
@@ -40,12 +36,10 @@ export class JobService {
         next: (response) => {
           this.currentPageSubject.next(page);
           this.currentCategorySubject.next(category);
-          this.loadingSubject.next(false);
           observer.next(response);
           observer.complete();
         },
         error: (error) => {
-          this.loadingSubject.next(false);
           console.error('Error fetching jobs:', error);
           
           // Return mock data for development/demo purposes
