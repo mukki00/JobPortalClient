@@ -32,11 +32,35 @@ export class JobService {
     const url = `${this.baseUrl}/jobs`;
     
     return new Observable<JobsResponse>(observer => {
-      this.http.get<JobsResponse>(url, { params }).subscribe({
-        next: (response) => {
+      this.http.get<any>(url, { params }).subscribe({
+        next: (apiResponse) => {
           this.currentPageSubject.next(page);
           this.currentCategorySubject.next(category);
-          observer.next(response);
+          
+          // Transform API response to match JobsResponse interface
+          const totalJobs = apiResponse.total || 0;
+          const currentPage = apiResponse.page || page;
+          const totalPages = Math.ceil(totalJobs / perPage);
+          
+          const transformedResponse: JobsResponse = {
+            jobs: apiResponse.jobs || [],
+            totalJobs: totalJobs,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            perPage: apiResponse.per_page || perPage,
+            hasNext: currentPage < totalPages,
+            hasPrevious: currentPage > 1
+          };
+          
+          console.log('Pagination info:', {
+            currentPage: transformedResponse.currentPage,
+            totalPages: transformedResponse.totalPages,
+            totalJobs: transformedResponse.totalJobs,
+            hasNext: transformedResponse.hasNext,
+            hasPrevious: transformedResponse.hasPrevious
+          });
+          
+          observer.next(transformedResponse);
           observer.complete();
         },
         error: (error) => {
