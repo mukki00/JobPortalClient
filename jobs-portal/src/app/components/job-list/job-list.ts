@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Job } from '../../models/job.model';
+import { JobService } from '../../services/job.service';
 
 @Component({
   selector: 'app-job-list',
@@ -11,7 +12,10 @@ import { Job } from '../../models/job.model';
 export class JobListComponent {
   @Input() jobs: Job[] = [];
   @Input() loading: boolean = false;
+  @Output() jobUpdated = new EventEmitter<void>();
 
+  private jobService = inject(JobService);
+  private updatingJobs = new Set<number>();
 
   getJobTypeClass(type: string): string {
     // Adjust class mapping for new JOB_TYPE values
@@ -28,5 +32,49 @@ export class JobListComponent {
     if (job.JOB_LINK) {
       window.open(job.JOB_LINK, '_blank');
     }
+  }
+
+  toggleJobApplication(job: Job): void {
+    if (this.updatingJobs.has(job.JOB_ID)) {
+      return; // Prevent multiple clicks while updating
+    }
+
+    const newAppliedStatus = job.APPLIED === 'N';
+    this.updatingJobs.add(job.JOB_ID);
+
+    this.jobService.updateJobApplicationStatus(job.JOB_ID, newAppliedStatus).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update the job object locally
+          job.APPLIED = newAppliedStatus ? 'Y' : 'N';
+          // Emit event to notify parent component
+          this.jobUpdated.emit();
+        }
+        this.updatingJobs.delete(job.JOB_ID);
+      },
+      error: (error) => {
+        console.error('Failed to update job application status:', error);
+        this.updatingJobs.delete(job.JOB_ID);
+      }
+    });
+  }
+
+  isUpdatingJob(jobId: number): boolean {
+    return this.updatingJobs.has(jobId);
+  }
+
+  getAppliedButtonText(job: Job): string {
+    if (this.isUpdatingJob(job.JOB_ID)) {
+      return 'Updating...';
+    }
+    return job.APPLIED === 'Y' ? 'Applied' : 'Mark Applied';
+  }
+
+  getAppliedButtonClass(job: Job): string {
+    const baseClass = 'applied-button';
+    if (job.APPLIED === 'Y') {
+      return `${baseClass} applied`;
+    }
+    return `${baseClass} not-applied`;
   }
 }

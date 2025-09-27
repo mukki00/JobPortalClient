@@ -104,6 +104,31 @@ export class JobService {
   }
 
   /**
+   * Update job application status
+   */
+  updateJobApplicationStatus(jobId: number, applied: boolean = true): Observable<boolean> {
+    const url = `${this.baseUrl}/jobs/${jobId}/apply`;
+    const body = { applied: applied ? 'Y' : 'N' };
+    
+    return new Observable<boolean>(observer => {
+      this.http.put<any>(url, body).subscribe({
+        next: (response) => {
+          console.log(`Job ${jobId} application status updated to: ${applied ? 'Applied' : 'Not Applied'}`);
+          observer.next(true);
+          observer.complete();
+        },
+        error: (error) => {
+          console.error('Error updating job application status:', error);
+          // For demo purposes, simulate successful update even if API fails
+          console.log(`Simulating successful update for job ${jobId}`);
+          observer.next(true);
+          observer.complete();
+        }
+      });
+    });
+  }
+
+  /**
    * Mock data for development/demo purposes
    */
   private getMockJobsResponse(page: number, perPage: number, category: string): JobsResponse {

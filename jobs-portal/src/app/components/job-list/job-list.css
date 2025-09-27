@@ -358,10 +358,7 @@
   transform: translateY(-1px);
 }
 
-.save-button {
-  background: #f9fafb;
-  color: #6b7280;
-  border: 1px solid #e5e7eb;
+.applied-button {
   padding: 0.75rem 1rem;
   border-radius: 8px;
   font-weight: 500;
@@ -371,12 +368,45 @@
   align-items: center;
   gap: 0.5rem;
   min-height: 2.75rem;
+  border: 1px solid;
 }
 
-.save-button:hover {
-  background: #f3f4f6;
-  color: #374151;
-  border-color: #d1d5db;
+.applied-button.not-applied {
+  background: #f9fafb;
+  color: #6b7280;
+  border-color: #e5e7eb;
+}
+
+.applied-button.not-applied:hover {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.applied-button.applied {
+  background: #dcfce7;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+.applied-button.applied:hover {
+  background: #bbf7d0;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.applied-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.applied-button svg {
+  animation: none;
+}
+
+.applied-button:disabled svg {
+  animation: spin 1s linear infinite;
 }
 
 /* Mobile Responsiveness */

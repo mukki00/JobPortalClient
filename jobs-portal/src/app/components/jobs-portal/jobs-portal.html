@@ -51,7 +51,8 @@
     <div class="job-list-section">
       <app-job-list 
         [jobs]="jobs" 
-        [loading]="loading">
+        [loading]="loading"
+        (jobUpdated)="onJobUpdated()">
       </app-job-list>
     </div>
 

@@ -83,4 +83,11 @@ export class JobsPortalComponent implements OnInit {
   refreshJobs() {
     this.loadJobs();
   }
+
+  onJobUpdated() {
+    // Optional: Could refresh the entire list or just log the update
+    console.log('Job application status updated');
+    // Uncomment the line below if you want to refresh the entire job list after an update
+    // this.loadJobs();
+  }
 }
