@@ -99,6 +99,19 @@
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
+.job-card.expired {
+  opacity: 0.6;
+  background: #fef3c7;
+  border-color: #fbbf24;
+  transform: none;
+  pointer-events: none;
+}
+
+.job-card.expired:hover {
+  transform: none;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
 /* Job Header */
 .job-header {
   display: flex;
@@ -458,6 +471,38 @@
   animation: spin 1s linear infinite;
 }
 
+.expire-button {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  border: 1px solid;
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #fbbf24;
+}
+
+.expire-button:hover:not(:disabled) {
+  background: #fbbf24;
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.expire-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.expire-button:disabled svg {
+  animation: spin 1s linear infinite;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .job-list-container {
@@ -499,7 +544,8 @@
     gap: 0.5rem;
   }
   
-  .apply-button {
+  .apply-button,
+  .expire-button {
     width: 100%;
   }
 }

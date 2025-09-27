@@ -10,6 +10,7 @@ export interface Job {
   JOB_TYPE: string;
   LINKEDIN_VERIFIED: string;
   REJECTED?: string; // Optional field for rejected status
+  EXPIRED?: string; // Optional field for expired status
 }
 
 export interface JobsResponse {

@@ -17,6 +17,7 @@ export class JobListComponent {
   private jobService = inject(JobService);
   private updatingJobs = new Set<number>();
   private rejectingJobs = new Set<number>();
+  private expiringJobs = new Set<number>();
 
   getJobTypeClass(type: string): string {
     // Adjust class mapping for new JOB_TYPE values
@@ -109,5 +110,37 @@ export class JobListComponent {
 
   isJobRejected(job: Job): boolean {
     return job.REJECTED === 'Y';
+  }
+
+  expireJob(job: Job): void {
+    if (this.expiringJobs.has(job.JOB_ID)) {
+      return; // Prevent multiple clicks while updating
+    }
+
+    this.expiringJobs.add(job.JOB_ID);
+
+    this.jobService.updateJobExpiredStatus(job.JOB_ID, true).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update the job object locally
+          job.EXPIRED = 'Y';
+          // Emit event to notify parent component
+          this.jobUpdated.emit();
+        }
+        this.expiringJobs.delete(job.JOB_ID);
+      },
+      error: (error) => {
+        console.error('Failed to update job expired status:', error);
+        this.expiringJobs.delete(job.JOB_ID);
+      }
+    });
+  }
+
+  isExpiringJob(jobId: number): boolean {
+    return this.expiringJobs.has(jobId);
+  }
+
+  isJobExpired(job: Job): boolean {
+    return job.EXPIRED === 'Y';
   }
 }

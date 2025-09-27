@@ -93,7 +93,7 @@ export class JobsPortalComponent implements OnInit {
   }
 
   private updateDisplayedJobs() {
-    // Filter out rejected jobs
-    this.displayedJobs = this.jobs.filter(job => job.REJECTED !== 'Y');
+    // Filter out rejected and expired jobs
+    this.displayedJobs = this.jobs.filter(job => job.REJECTED !== 'Y' && job.EXPIRED !== 'Y');
   }
 }
