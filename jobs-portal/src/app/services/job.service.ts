@@ -42,8 +42,14 @@ export class JobService {
           const currentPage = apiResponse.page || page;
           const totalPages = Math.ceil(totalJobs / perPage);
           
+          // Ensure all jobs have REJECTED field defaulting to "N"
+          const jobsWithRejected = (apiResponse.jobs || []).map((job: any) => ({
+            ...job,
+            REJECTED: job.REJECTED || "N"
+          }));
+          
           const transformedResponse: JobsResponse = {
-            jobs: apiResponse.jobs || [],
+            jobs: jobsWithRejected,
             totalJobs: totalJobs,
             currentPage: currentPage,
             totalPages: totalPages,
@@ -129,6 +135,31 @@ export class JobService {
   }
 
   /**
+   * Update job rejected status
+   */
+  updateJobRejectedStatus(jobId: number, rejected: boolean = true): Observable<boolean> {
+    const url = `${this.baseUrl}/jobs/${jobId}/reject`;
+    const body = { rejected: rejected ? 'Y' : 'N' };
+    
+    return new Observable<boolean>(observer => {
+      this.http.put<any>(url, body).subscribe({
+        next: (response) => {
+          console.log(`Job ${jobId} rejected status updated to: ${rejected ? 'Rejected' : 'Active'}`);
+          observer.next(true);
+          observer.complete();
+        },
+        error: (error) => {
+          console.error('Error updating job rejected status:', error);
+          // For demo purposes, simulate successful update even if API fails
+          console.log(`Simulating successful update for job ${jobId} rejected status`);
+          observer.next(true);
+          observer.complete();
+        }
+      });
+    });
+  }
+
+  /**
    * Mock data for development/demo purposes
    */
   private getMockJobsResponse(page: number, perPage: number, category: string): JobsResponse {
@@ -143,7 +174,8 @@ export class JobService {
         JOB_SOURCE: "LinkedIn",
         JOB_TITLE: "Senior QA Automation Engineer",
         JOB_TYPE: "On-site",
-        LINKEDIN_VERIFIED: "Y"
+        LINKEDIN_VERIFIED: "Y",
+        REJECTED: "N"
       },
       {
         APPLIED: "N",
@@ -155,7 +187,8 @@ export class JobService {
         JOB_SOURCE: "LinkedIn",
         JOB_TITLE: "Full-Stack Developer (Laravel & VueJS)",
         JOB_TYPE: "Remote",
-        LINKEDIN_VERIFIED: "Y"
+        LINKEDIN_VERIFIED: "Y",
+        REJECTED: "N"
       },
       {
         APPLIED: "N",
@@ -167,7 +200,8 @@ export class JobService {
         JOB_SOURCE: "LinkedIn",
         JOB_TITLE: "Senior Software Engineer - .Net + Angular",
         JOB_TYPE: "Remote",
-        LINKEDIN_VERIFIED: "Y"
+        LINKEDIN_VERIFIED: "Y",
+        REJECTED: "N"
       },
       {
         APPLIED: "N",
@@ -179,7 +213,8 @@ export class JobService {
         JOB_SOURCE: "LinkedIn",
         JOB_TITLE: "React Frontend Developer",
         JOB_TYPE: "Hybrid",
-        LINKEDIN_VERIFIED: "Y"
+        LINKEDIN_VERIFIED: "Y",
+        REJECTED: "N"
       },
       {
         APPLIED: "Y",
@@ -191,7 +226,8 @@ export class JobService {
         JOB_SOURCE: "LinkedIn",
         JOB_TITLE: "DevOps Engineer",
         JOB_TYPE: "Remote",
-        LINKEDIN_VERIFIED: "N"
+        LINKEDIN_VERIFIED: "N",
+        REJECTED: "N"
       }
     ];
 

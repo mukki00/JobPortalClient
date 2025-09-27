@@ -22,6 +22,7 @@ export class JobsPortalComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   
   jobs: Job[] = [];
+  displayedJobs: Job[] = [];
   loading: boolean = false;
   currentPage: number = 1;
   totalPages: number = 1;
@@ -66,6 +67,7 @@ export class JobsPortalComponent implements OnInit {
       .subscribe({
         next: (response: JobsResponse) => {
           this.jobs = response.jobs;
+          this.updateDisplayedJobs();
           this.totalJobs = response.totalJobs;
           this.totalPages = response.totalPages;
           this.currentPage = response.currentPage;
@@ -85,9 +87,13 @@ export class JobsPortalComponent implements OnInit {
   }
 
   onJobUpdated() {
-    // Optional: Could refresh the entire list or just log the update
-    console.log('Job application status updated');
-    // Uncomment the line below if you want to refresh the entire job list after an update
-    // this.loadJobs();
+    // Update displayed jobs to filter out rejected ones
+    this.updateDisplayedJobs();
+    console.log('Job status updated');
+  }
+
+  private updateDisplayedJobs() {
+    // Filter out rejected jobs
+    this.displayedJobs = this.jobs.filter(job => job.REJECTED !== 'Y');
   }
 }

@@ -50,14 +50,14 @@
     <!-- Job List -->
     <div class="job-list-section">
       <app-job-list 
-        [jobs]="jobs" 
+        [jobs]="displayedJobs" 
         [loading]="loading"
         (jobUpdated)="onJobUpdated()">
       </app-job-list>
     </div>
 
     <!-- Pagination -->
-    <div class="pagination-section" *ngIf="!loading && jobs.length > 0">
+    <div class="pagination-section" *ngIf="!loading && displayedJobs.length > 0">
       <app-pagination
         [currentPage]="currentPage"
         [totalPages]="totalPages"

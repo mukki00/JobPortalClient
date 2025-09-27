@@ -9,6 +9,7 @@ export interface Job {
   JOB_TITLE: string;
   JOB_TYPE: string;
   LINKEDIN_VERIFIED: string;
+  REJECTED?: string; // Optional field for rejected status
 }
 
 export interface JobsResponse {

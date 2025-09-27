@@ -16,6 +16,7 @@ export class JobListComponent {
 
   private jobService = inject(JobService);
   private updatingJobs = new Set<number>();
+  private rejectingJobs = new Set<number>();
 
   getJobTypeClass(type: string): string {
     // Adjust class mapping for new JOB_TYPE values
@@ -76,5 +77,37 @@ export class JobListComponent {
       return `${baseClass} applied`;
     }
     return `${baseClass} not-applied`;
+  }
+
+  rejectJob(job: Job): void {
+    if (this.rejectingJobs.has(job.JOB_ID)) {
+      return; // Prevent multiple clicks while updating
+    }
+
+    this.rejectingJobs.add(job.JOB_ID);
+
+    this.jobService.updateJobRejectedStatus(job.JOB_ID, true).subscribe({
+      next: (success) => {
+        if (success) {
+          // Update the job object locally
+          job.REJECTED = 'Y';
+          // Emit event to notify parent component
+          this.jobUpdated.emit();
+        }
+        this.rejectingJobs.delete(job.JOB_ID);
+      },
+      error: (error) => {
+        console.error('Failed to update job rejected status:', error);
+        this.rejectingJobs.delete(job.JOB_ID);
+      }
+    });
+  }
+
+  isRejectingJob(jobId: number): boolean {
+    return this.rejectingJobs.has(jobId);
+  }
+
+  isJobRejected(job: Job): boolean {
+    return job.REJECTED === 'Y';
   }
 }

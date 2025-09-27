@@ -86,6 +86,19 @@
   transform: translateY(-2px);
 }
 
+.job-card.rejected {
+  opacity: 0.6;
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  transform: none;
+  pointer-events: none;
+}
+
+.job-card.rejected:hover {
+  transform: none;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
 /* Job Header */
 .job-header {
   display: flex;
@@ -93,6 +106,42 @@
   align-items: flex-start;
   margin-bottom: 1rem;
   gap: 1rem;
+}
+
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.close-button {
+  background: #f9fafb;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.close-button:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.close-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.close-button:disabled svg {
+  animation: spin 1s linear infinite;
 }
 
 .company-info {
@@ -429,14 +478,17 @@
     align-items: stretch;
     gap: 0.75rem;
   }
-  
+
+  .job-actions {
+    align-self: flex-end;
+    margin-top: -2rem;
+  }
+
   .job-meta {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-  }
-  
-  .job-details {
+  }  .job-details {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
