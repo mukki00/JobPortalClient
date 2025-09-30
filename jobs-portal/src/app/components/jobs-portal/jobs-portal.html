@@ -32,6 +32,36 @@
     </app-category-tabs>
   </div>
 
+  <!-- Job Status Tabs -->
+  <div class="status-tabs-section">
+    <div class="status-tabs">
+      <button 
+        class="status-tab"
+        [class.active]="currentTab === 'available'"
+        (click)="switchTab('available')"
+        type="button">
+        <span class="tab-label">Available Jobs</span>
+        <span class="tab-count">{{ getTabCount('available') }}</span>
+      </button>
+      <button 
+        class="status-tab"
+        [class.active]="currentTab === 'applied'"
+        (click)="switchTab('applied')"
+        type="button">
+        <span class="tab-label">Applied Jobs</span>
+        <span class="tab-count">{{ getTabCount('applied') }}</span>
+      </button>
+      <button 
+        class="status-tab"
+        [class.active]="currentTab === 'expired-rejected'"
+        (click)="switchTab('expired-rejected')"
+        type="button">
+        <span class="tab-label">Expired/Rejected</span>
+        <span class="tab-count">{{ getTabCount('expired-rejected') }}</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Main Content Area -->
   <main class="portal-main">
     <!-- Results Summary -->

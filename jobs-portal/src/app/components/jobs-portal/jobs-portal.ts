@@ -30,6 +30,12 @@ export class JobsPortalComponent implements OnInit {
   currentCategory: string = 'Recommended';
   itemsPerPage: number = 50;
   
+  // Tab management
+  currentTab: 'available' | 'applied' | 'expired-rejected' = 'available';
+  availableJobs: Job[] = [];
+  appliedJobs: Job[] = [];
+  expiredRejectedJobs: Job[] = [];
+  
   ngOnInit() {
     this.jobService.currentPage$.subscribe(page => {
       this.currentPage = page;
@@ -67,6 +73,7 @@ export class JobsPortalComponent implements OnInit {
       .subscribe({
         next: (response: JobsResponse) => {
           this.jobs = response.jobs;
+          this.categorizeJobs();
           this.updateDisplayedJobs();
           this.totalJobs = response.totalJobs;
           this.totalPages = response.totalPages;
@@ -87,13 +94,57 @@ export class JobsPortalComponent implements OnInit {
   }
 
   onJobUpdated() {
-    // Update displayed jobs to filter out rejected ones
+    // Re-categorize jobs after status update
+    this.categorizeJobs();
     this.updateDisplayedJobs();
     console.log('Job status updated');
   }
 
+  private categorizeJobs() {
+    // Categorize jobs into different tabs
+    this.availableJobs = this.jobs.filter(job => 
+      job.APPLIED !== 'Y' && job.REJECTED !== 'Y' && job.EXPIRED !== 'Y'
+    );
+    
+    this.appliedJobs = this.jobs.filter(job => job.APPLIED === 'Y');
+    
+    this.expiredRejectedJobs = this.jobs.filter(job => 
+      job.REJECTED === 'Y' || job.EXPIRED === 'Y'
+    );
+  }
+
   private updateDisplayedJobs() {
-    // Filter out rejected and expired jobs
-    this.displayedJobs = this.jobs.filter(job => job.REJECTED !== 'Y' && job.EXPIRED !== 'Y');
+    // Update displayed jobs based on current tab
+    switch (this.currentTab) {
+      case 'available':
+        this.displayedJobs = this.availableJobs;
+        break;
+      case 'applied':
+        this.displayedJobs = this.appliedJobs;
+        break;
+      case 'expired-rejected':
+        this.displayedJobs = this.expiredRejectedJobs;
+        break;
+      default:
+        this.displayedJobs = this.availableJobs;
+    }
+  }
+
+  switchTab(tab: 'available' | 'applied' | 'expired-rejected') {
+    this.currentTab = tab;
+    this.updateDisplayedJobs();
+  }
+
+  getTabCount(tab: 'available' | 'applied' | 'expired-rejected'): number {
+    switch (tab) {
+      case 'available':
+        return this.availableJobs.length;
+      case 'applied':
+        return this.appliedJobs.length;
+      case 'expired-rejected':
+        return this.expiredRejectedJobs.length;
+      default:
+        return 0;
+    }
   }
 }
