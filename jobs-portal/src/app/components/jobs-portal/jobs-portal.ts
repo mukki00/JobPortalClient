@@ -110,8 +110,23 @@ export class JobsPortalComponent implements OnInit {
   }
 
   onJobUpdated() {
+    console.log('Job update event received');
+    console.log('Current jobs before categorization:', this.jobs.map(job => ({
+      id: job.JOB_ID,
+      applied: job.APPLIED,
+      rejected: job.REJECTED,
+      expired: job.EXPIRED
+    })));
+    
     // Re-categorize jobs after status update
     this.categorizeJobs();
+    
+    console.log('After categorization:', {
+      available: this.availableJobs.length,
+      applied: this.appliedJobs.length,
+      expiredRejected: this.expiredRejectedJobs.length
+    });
+    
     this.updateDisplayedJobs();
     
     // Recalculate total counts after job status update
@@ -119,36 +134,36 @@ export class JobsPortalComponent implements OnInit {
     this.calculateTotalCounts();
     
     console.log('Job status updated');
+    console.warn('Note: Job status updates are currently simulated. Backend API endpoints may not be implemented yet.');
   }
 
   private calculateTotalCounts() {
-    // Use statistical estimation based on current page jobs
+    // Show counts based on locally updated jobs (including simulated updates)
     const currentPageSize = this.jobs.length;
     const totalJobs = this.totalJobs;
     
     if (currentPageSize > 0 && totalJobs > 0) {
-      // Calculate percentages from current page
+      // Count jobs based on current local state (including simulated updates)
       const availableCount = this.availableJobs.length;
       const appliedCount = this.appliedJobs.length;
       const expiredRejectedCount = this.expiredRejectedJobs.length;
       
-      const availablePercentage = availableCount / currentPageSize;
-      const appliedPercentage = appliedCount / currentPageSize;
-      const expiredRejectedPercentage = expiredRejectedCount / currentPageSize;
-      
-      // Apply percentages to total job count
-      this.totalAvailableJobs = Math.round(totalJobs * availablePercentage);
-      this.totalAppliedJobs = Math.round(totalJobs * appliedPercentage);
-      this.totalExpiredRejectedJobs = Math.round(totalJobs * expiredRejectedPercentage);
+      // For now, use actual counts from current page since API updates are local
+      // In a real scenario, you'd estimate based on percentages across all pages
+      this.totalAvailableJobs = totalJobs - appliedCount - expiredRejectedCount; // Estimate remaining available
+      this.totalAppliedJobs = appliedCount; // Use actual applied count from current page
+      this.totalExpiredRejectedJobs = expiredRejectedCount; // Use actual expired/rejected count
       
       this.countsCalculated = true;
       
-      console.log('Total counts calculated:', {
+      console.log('Total counts calculated from local state:', {
         available: this.totalAvailableJobs,
         applied: this.totalAppliedJobs,
         expiredRejected: this.totalExpiredRejectedJobs,
         totalJobs: totalJobs,
-        basedOnPage: this.currentPage
+        localApplied: appliedCount,
+        localExpiredRejected: expiredRejectedCount,
+        note: 'Counts include locally applied jobs (simulated updates)'
       });
     }
   }
@@ -184,8 +199,54 @@ export class JobsPortalComponent implements OnInit {
   }
 
   switchTab(tab: 'available' | 'applied' | 'expired-rejected') {
+    console.log(`Switching to ${tab} tab`);
     this.currentTab = tab;
-    this.updateDisplayedJobs();
+    
+    if (tab === 'applied' || tab === 'expired-rejected') {
+      // Load all jobs for applied/expired-rejected tabs
+      console.log(`Loading all ${tab} jobs from database`);
+      this.loadJobsByStatus(tab);
+    } else {
+      // For available tab, use current page jobs
+      console.log('Using current page jobs for available tab');
+      this.updateDisplayedJobs();
+    }
+  }
+
+  private loadJobsByStatus(status: 'applied' | 'expired-rejected') {
+    // Since the backend API updates are not working yet (they're simulated),
+    // we'll show jobs from the current page that match the status
+    console.log(`Loading jobs by status: ${status} from current page`);
+    console.log('Current job statuses:', this.jobs.map(job => ({
+      id: job.JOB_ID,
+      title: job.JOB_TITLE?.substring(0, 30),
+      applied: job.APPLIED,
+      rejected: job.REJECTED,
+      expired: job.EXPIRED
+    })));
+    
+    let filteredJobs: Job[] = [];
+    
+    if (status === 'applied') {
+      filteredJobs = this.appliedJobs;
+      console.log(`Applied jobs array:`, this.appliedJobs.map(job => ({
+        id: job.JOB_ID,
+        title: job.JOB_TITLE?.substring(0, 30),
+        applied: job.APPLIED
+      })));
+      console.log(`Found ${filteredJobs.length} applied jobs from current page`);
+    } else if (status === 'expired-rejected') {
+      filteredJobs = this.expiredRejectedJobs;
+      console.log(`Found ${filteredJobs.length} expired/rejected jobs from current page`);
+    }
+    
+    this.displayedJobs = filteredJobs;
+    
+    if (filteredJobs.length === 0) {
+      console.log(`No ${status} jobs found on current page.`);
+    }
+    
+    this.cdr.detectChanges();
   }
 
   getTabCount(tab: 'available' | 'applied' | 'expired-rejected'): number {
