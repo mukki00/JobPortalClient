@@ -36,6 +36,12 @@ export class JobsPortalComponent implements OnInit {
   appliedJobs: Job[] = [];
   expiredRejectedJobs: Job[] = [];
   
+  // Cache total counts to avoid recalculating
+  totalAvailableJobs: number = 0;
+  totalAppliedJobs: number = 0;
+  totalExpiredRejectedJobs: number = 0;
+  countsCalculated: boolean = false;
+  
   ngOnInit() {
     this.jobService.currentPage$.subscribe(page => {
       this.currentPage = page;
@@ -52,6 +58,10 @@ export class JobsPortalComponent implements OnInit {
   onCategorySelected(category: string) {
     this.currentCategory = category;
     this.currentPage = 1; // Reset to first page when changing category
+    
+    // Reset total counts for new category
+    this.countsCalculated = false;
+    
     this.jobService.setCurrentCategory(category);
     this.jobService.setCurrentPage(1);
     this.loadJobs();
@@ -79,6 +89,12 @@ export class JobsPortalComponent implements OnInit {
           this.totalPages = response.totalPages;
           this.currentPage = response.currentPage;
           this.loading = false;
+          
+          // Calculate total counts only once per category
+          if (!this.countsCalculated) {
+            this.calculateTotalCounts();
+          }
+          
           this.cdr.detectChanges();
         },
         error: (error) => {
@@ -97,7 +113,44 @@ export class JobsPortalComponent implements OnInit {
     // Re-categorize jobs after status update
     this.categorizeJobs();
     this.updateDisplayedJobs();
+    
+    // Recalculate total counts after job status update
+    this.countsCalculated = false;
+    this.calculateTotalCounts();
+    
     console.log('Job status updated');
+  }
+
+  private calculateTotalCounts() {
+    // Use statistical estimation based on current page jobs
+    const currentPageSize = this.jobs.length;
+    const totalJobs = this.totalJobs;
+    
+    if (currentPageSize > 0 && totalJobs > 0) {
+      // Calculate percentages from current page
+      const availableCount = this.availableJobs.length;
+      const appliedCount = this.appliedJobs.length;
+      const expiredRejectedCount = this.expiredRejectedJobs.length;
+      
+      const availablePercentage = availableCount / currentPageSize;
+      const appliedPercentage = appliedCount / currentPageSize;
+      const expiredRejectedPercentage = expiredRejectedCount / currentPageSize;
+      
+      // Apply percentages to total job count
+      this.totalAvailableJobs = Math.round(totalJobs * availablePercentage);
+      this.totalAppliedJobs = Math.round(totalJobs * appliedPercentage);
+      this.totalExpiredRejectedJobs = Math.round(totalJobs * expiredRejectedPercentage);
+      
+      this.countsCalculated = true;
+      
+      console.log('Total counts calculated:', {
+        available: this.totalAvailableJobs,
+        applied: this.totalAppliedJobs,
+        expiredRejected: this.totalExpiredRejectedJobs,
+        totalJobs: totalJobs,
+        basedOnPage: this.currentPage
+      });
+    }
   }
 
   private categorizeJobs() {
@@ -136,15 +189,30 @@ export class JobsPortalComponent implements OnInit {
   }
 
   getTabCount(tab: 'available' | 'applied' | 'expired-rejected'): number {
-    switch (tab) {
-      case 'available':
-        return this.availableJobs.length;
-      case 'applied':
-        return this.appliedJobs.length;
-      case 'expired-rejected':
-        return this.expiredRejectedJobs.length;
-      default:
-        return 0;
+    // Use calculated total counts if available, otherwise fall back to current page counts
+    if (this.countsCalculated) {
+      switch (tab) {
+        case 'available':
+          return this.totalAvailableJobs;
+        case 'applied':
+          return this.totalAppliedJobs;
+        case 'expired-rejected':
+          return this.totalExpiredRejectedJobs;
+        default:
+          return 0;
+      }
+    } else {
+      // Fallback to current page counts while calculating
+      switch (tab) {
+        case 'available':
+          return this.availableJobs.length;
+        case 'applied':
+          return this.appliedJobs.length;
+        case 'expired-rejected':
+          return this.expiredRejectedJobs.length;
+        default:
+          return 0;
+      }
     }
   }
 }
