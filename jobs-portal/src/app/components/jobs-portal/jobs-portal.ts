@@ -120,8 +120,8 @@ export class JobsPortalComponent implements OnInit {
 
   private calculateTotalCounts() {
     // Get accurate counts from both applied and rejected/expired database endpoints
-    const appliedRequest = this.jobService.getAppliedJobs(1, 1000, this.currentCategory);
-    const rejectedExpiredRequest = this.jobService.getRejectedExpiredJobs(1, 1000, this.currentCategory);
+    const appliedRequest = this.jobService.getAppliedJobs(1, 50, this.currentCategory);
+    const rejectedExpiredRequest = this.jobService.getRejectedExpiredJobs(1, 50, this.currentCategory);
     
     // Wait for both requests to complete
     appliedRequest.subscribe({
@@ -225,7 +225,7 @@ export class JobsPortalComponent implements OnInit {
     
     if (status === 'applied') {
       // Load applied jobs from database AND include locally applied jobs
-      this.jobService.getAppliedJobs(1, 100, this.currentCategory)
+      this.jobService.getAppliedJobs(1, 50, this.currentCategory)
         .subscribe({
           next: (response: JobsResponse) => {
             const databaseAppliedJobs = response.jobs;
@@ -257,7 +257,7 @@ export class JobsPortalComponent implements OnInit {
         });
     } else if (status === 'expired-rejected') {
       // Load rejected/expired jobs from database AND include locally rejected/expired jobs
-      this.jobService.getRejectedExpiredJobs(1, 100, this.currentCategory)
+      this.jobService.getRejectedExpiredJobs(1, 50, this.currentCategory)
         .subscribe({
           next: (response: JobsResponse) => {
             const databaseRejectedExpiredJobs = response.jobs;
