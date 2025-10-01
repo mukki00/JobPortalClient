@@ -98,7 +98,6 @@ export class JobsPortalComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error loading jobs:', error);
           this.loading = false;
           this.cdr.detectChanges();
         }
@@ -110,37 +109,17 @@ export class JobsPortalComponent implements OnInit {
   }
 
   onJobUpdated() {
-    console.log('Job update event received');
-    console.log('Current jobs before categorization:', this.jobs.map(job => ({
-      id: job.JOB_ID,
-      applied: job.APPLIED,
-      rejected: job.REJECTED,
-      expired: job.EXPIRED
-    })));
-    
     // Re-categorize jobs after status update
     this.categorizeJobs();
-    
-    console.log('After categorization:', {
-      available: this.availableJobs.length,
-      applied: this.appliedJobs.length,
-      expiredRejected: this.expiredRejectedJobs.length
-    });
-    
     this.updateDisplayedJobs();
     
     // Recalculate total counts after job status update
     this.countsCalculated = false;
     this.calculateTotalCounts();
-    
-    console.log('Job status updated');
-    console.warn('Note: Job status updates are currently simulated. Backend API endpoints may not be implemented yet.');
   }
 
   private calculateTotalCounts() {
     // Get accurate applied job count from database
-    console.log('Calculating total counts including database applied jobs...');
-    
     this.jobService.getAppliedJobs(1, 1000, this.currentCategory)
       .subscribe({
         next: (response: JobsResponse) => {
@@ -154,25 +133,13 @@ export class JobsPortalComponent implements OnInit {
           const uniqueLocalApplied = localAppliedIds.filter(id => !databaseAppliedIds.includes(id));
           
           this.totalAppliedJobs = databaseAppliedCount + uniqueLocalApplied.length;
-          this.totalExpiredRejectedJobs = localExpiredRejectedCount; // For now, only local
+          this.totalExpiredRejectedJobs = localExpiredRejectedCount;
           this.totalAvailableJobs = this.totalJobs - this.totalAppliedJobs - this.totalExpiredRejectedJobs;
           
           this.countsCalculated = true;
-          
-          console.log('Total counts calculated with database data:', {
-            available: this.totalAvailableJobs,
-            applied: this.totalAppliedJobs,
-            expiredRejected: this.totalExpiredRejectedJobs,
-            databaseApplied: databaseAppliedCount,
-            localApplied: localAppliedCount,
-            uniqueLocalApplied: uniqueLocalApplied.length,
-            totalJobs: this.totalJobs
-          });
-          
           this.cdr.detectChanges();
         },
         error: (error) => {
-          console.error('Error getting applied jobs count from database:', error);
           // Fallback to local counts only
           const availableCount = this.availableJobs.length;
           const appliedCount = this.appliedJobs.length;
@@ -182,8 +149,6 @@ export class JobsPortalComponent implements OnInit {
           this.totalAppliedJobs = appliedCount;
           this.totalExpiredRejectedJobs = expiredRejectedCount;
           this.countsCalculated = true;
-          
-          console.log('Fallback: using local counts only');
           this.cdr.detectChanges();
         }
       });
@@ -220,23 +185,19 @@ export class JobsPortalComponent implements OnInit {
   }
 
   switchTab(tab: 'available' | 'applied' | 'expired-rejected') {
-    console.log(`Switching to ${tab} tab`);
     this.currentTab = tab;
     
     if (tab === 'applied' || tab === 'expired-rejected') {
       // Load all jobs for applied/expired-rejected tabs
-      console.log(`Loading all ${tab} jobs from database`);
       this.loadJobsByStatus(tab);
     } else {
       // For available tab, use current page jobs
-      console.log('Using current page jobs for available tab');
       this.updateDisplayedJobs();
     }
   }
 
   private loadJobsByStatus(status: 'applied' | 'expired-rejected') {
     this.loading = true;
-    console.log(`Loading jobs by status: ${status}`);
     
     if (status === 'applied') {
       // Load applied jobs from database AND include locally applied jobs
@@ -244,11 +205,9 @@ export class JobsPortalComponent implements OnInit {
         .subscribe({
           next: (response: JobsResponse) => {
             const databaseAppliedJobs = response.jobs;
-            console.log(`Loaded ${databaseAppliedJobs.length} applied jobs from database`);
             
             // Get locally applied jobs from current page
             const locallyAppliedJobs = this.appliedJobs;
-            console.log(`Found ${locallyAppliedJobs.length} locally applied jobs`);
             
             // Combine database and local applied jobs, avoiding duplicates
             const allAppliedJobs = [...databaseAppliedJobs];
@@ -263,25 +222,19 @@ export class JobsPortalComponent implements OnInit {
             
             this.displayedJobs = allAppliedJobs;
             this.loading = false;
-            
-            console.log(`Total applied jobs displayed: ${allAppliedJobs.length} (${databaseAppliedJobs.length} from DB + ${locallyAppliedJobs.length} local, ${allAppliedJobs.length - databaseAppliedJobs.length - locallyAppliedJobs.length} duplicates removed)`);
             this.cdr.detectChanges();
           },
           error: (error) => {
-            console.error('Error loading applied jobs from database:', error);
             // Fallback to locally applied jobs only
             this.displayedJobs = this.appliedJobs;
             this.loading = false;
-            console.log(`Fallback: showing ${this.appliedJobs.length} locally applied jobs only`);
             this.cdr.detectChanges();
           }
         });
     } else if (status === 'expired-rejected') {
       // For now, show local expired/rejected jobs
-      // TODO: Implement database endpoint for expired/rejected jobs if needed
       this.displayedJobs = this.expiredRejectedJobs;
       this.loading = false;
-      console.log(`Found ${this.expiredRejectedJobs.length} expired/rejected jobs from current page`);
       this.cdr.detectChanges();
     }
   }

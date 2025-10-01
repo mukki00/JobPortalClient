@@ -59,20 +59,10 @@ export class JobService {
             hasPrevious: currentPage > 1
           };
           
-          console.log('Pagination info:', {
-            currentPage: transformedResponse.currentPage,
-            totalPages: transformedResponse.totalPages,
-            totalJobs: transformedResponse.totalJobs,
-            hasNext: transformedResponse.hasNext,
-            hasPrevious: transformedResponse.hasPrevious
-          });
-          
           observer.next(transformedResponse);
           observer.complete();
         },
         error: (error) => {
-          console.error('Error fetching jobs:', error);
-          
           // Return mock data for development/demo purposes
           const mockResponse: JobsResponse = this.getMockJobsResponse(page, perPage, category);
           observer.next(mockResponse);
@@ -120,14 +110,11 @@ export class JobService {
     return new Observable<boolean>(observer => {
       this.http.put<any>(url, body).subscribe({
         next: (response) => {
-          console.log(`Job ${jobId} application status updated to: ${applied ? 'Applied' : 'Not Applied'}`);
           observer.next(true);
           observer.complete();
         },
         error: (error) => {
-          console.error('Error updating job application status:', error);
           // For demo purposes, simulate successful update even if API fails
-          console.log(`Simulating successful update for job ${jobId}`);
           observer.next(true);
           observer.complete();
         }
@@ -145,14 +132,11 @@ export class JobService {
     return new Observable<boolean>(observer => {
       this.http.put<any>(url, body).subscribe({
         next: (response) => {
-          console.log(`Job ${jobId} rejected status updated to: ${rejected ? 'Rejected' : 'Active'}`);
           observer.next(true);
           observer.complete();
         },
         error: (error) => {
-          console.error('Error updating job rejected status:', error);
           // For demo purposes, simulate successful update even if API fails
-          console.log(`Simulating successful update for job ${jobId} rejected status`);
           observer.next(true);
           observer.complete();
         }
@@ -170,14 +154,11 @@ export class JobService {
     return new Observable<boolean>(observer => {
       this.http.put<any>(url, body).subscribe({
         next: (response) => {
-          console.log(`Job ${jobId} expired status updated to: ${expired ? 'Expired' : 'Active'}`);
           observer.next(true);
           observer.complete();
         },
         error: (error) => {
-          console.error('Error updating job expired status:', error);
           // For demo purposes, simulate successful update even if API fails
-          console.log(`Simulating successful update for job ${jobId} expired status`);
           observer.next(true);
           observer.complete();
         }
@@ -202,8 +183,6 @@ export class JobService {
     return new Observable<JobsResponse>(observer => {
       this.http.get<any>(url, { params }).subscribe({
         next: (apiResponse) => {
-          console.log('Applied jobs API response:', apiResponse);
-          
           // Transform API response to match JobsResponse interface
           const totalJobs = apiResponse.total || 0;
           const currentPage = apiResponse.page || page;
@@ -231,7 +210,6 @@ export class JobService {
           observer.complete();
         },
         error: (error) => {
-          console.error('Error fetching applied jobs:', error);
           // Return empty response on error
           const emptyResponse: JobsResponse = {
             jobs: [],

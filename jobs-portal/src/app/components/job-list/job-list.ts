@@ -55,7 +55,6 @@ export class JobListComponent {
         this.updatingJobs.delete(job.JOB_ID);
       },
       error: (error) => {
-        console.error('Failed to update job application status:', error);
         this.updatingJobs.delete(job.JOB_ID);
       }
     });
@@ -98,7 +97,6 @@ export class JobListComponent {
         this.rejectingJobs.delete(job.JOB_ID);
       },
       error: (error) => {
-        console.error('Failed to update job rejected status:', error);
         this.rejectingJobs.delete(job.JOB_ID);
       }
     });
@@ -130,7 +128,6 @@ export class JobListComponent {
         this.expiringJobs.delete(job.JOB_ID);
       },
       error: (error) => {
-        console.error('Failed to update job expired status:', error);
         this.expiringJobs.delete(job.JOB_ID);
       }
     });
