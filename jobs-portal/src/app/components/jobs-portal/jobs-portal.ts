@@ -42,6 +42,11 @@ export class JobsPortalComponent implements OnInit {
   totalExpiredRejectedJobs: number = 0;
   countsCalculated: boolean = false;
   
+  // Store actual total counts from API responses for banner display
+  apiTotalAvailableJobs: number = 0;
+  apiTotalAppliedJobs: number = 0;
+  apiTotalExpiredRejectedJobs: number = 0;
+  
   ngOnInit() {
     this.jobService.currentPage$.subscribe(page => {
       this.currentPage = page;
@@ -88,6 +93,10 @@ export class JobsPortalComponent implements OnInit {
           this.totalJobs = response.totalJobs;
           this.totalPages = response.totalPages;
           this.currentPage = response.currentPage;
+          
+          // Store the API total for available jobs banner
+          this.apiTotalAvailableJobs = response.totalJobs;
+          
           this.loading = false;
           
           // Calculate total counts only once per category
@@ -129,6 +138,9 @@ export class JobsPortalComponent implements OnInit {
         const databaseAppliedCount = appliedResponse.totalJobs || appliedResponse.jobs.length;
         const localAppliedCount = this.appliedJobs.length;
         
+        // Store the API total for applied jobs tab display
+        this.apiTotalAppliedJobs = appliedResponse.totalJobs || 0;
+        
         // Calculate unique local applied jobs
         const localAppliedIds = this.appliedJobs.map(job => job.JOB_ID);
         const databaseAppliedIds = appliedResponse.jobs.map(job => job.JOB_ID);
@@ -141,6 +153,9 @@ export class JobsPortalComponent implements OnInit {
           next: (rejectedResponse: JobsResponse) => {
             const databaseRejectedExpiredCount = rejectedResponse.totalJobs || rejectedResponse.jobs.length;
             const localRejectedExpiredCount = this.expiredRejectedJobs.length;
+            
+            // Store the API total for expired/rejected jobs tab display
+            this.apiTotalExpiredRejectedJobs = rejectedResponse.totalJobs || 0;
             
             // Calculate unique local rejected/expired jobs
             const localRejectedExpiredIds = this.expiredRejectedJobs.map(job => job.JOB_ID);
@@ -230,6 +245,9 @@ export class JobsPortalComponent implements OnInit {
           next: (response: JobsResponse) => {
             const databaseAppliedJobs = response.jobs;
             
+            // Store the API total for applied jobs banner
+            this.apiTotalAppliedJobs = response.totalJobs || 0;
+            
             // Get locally applied jobs from current page
             const locallyAppliedJobs = this.appliedJobs;
             
@@ -262,6 +280,9 @@ export class JobsPortalComponent implements OnInit {
           next: (response: JobsResponse) => {
             const databaseRejectedExpiredJobs = response.jobs;
             
+            // Store the API total for expired/rejected jobs banner
+            this.apiTotalExpiredRejectedJobs = response.totalJobs || 0;
+            
             // Get locally rejected/expired jobs from current page
             const locallyRejectedExpiredJobs = this.expiredRejectedJobs;
             
@@ -291,30 +312,30 @@ export class JobsPortalComponent implements OnInit {
   }
 
   getTabCount(tab: 'available' | 'applied' | 'expired-rejected'): number {
-    // Use calculated total counts if available, otherwise fall back to current page counts
-    if (this.countsCalculated) {
-      switch (tab) {
-        case 'available':
-          return this.totalAvailableJobs;
-        case 'applied':
-          return this.totalAppliedJobs;
-        case 'expired-rejected':
-          return this.totalExpiredRejectedJobs;
-        default:
-          return 0;
-      }
-    } else {
-      // Fallback to current page counts while calculating
-      switch (tab) {
-        case 'available':
-          return this.availableJobs.length;
-        case 'applied':
-          return this.appliedJobs.length;
-        case 'expired-rejected':
-          return this.expiredRejectedJobs.length;
-        default:
-          return 0;
-      }
+    // Use API response totals for tab counts to match banner display
+    switch (tab) {
+      case 'available':
+        return this.apiTotalAvailableJobs || this.availableJobs.length;
+      case 'applied':
+        return this.apiTotalAppliedJobs || this.appliedJobs.length;
+      case 'expired-rejected':
+        return this.apiTotalExpiredRejectedJobs || this.expiredRejectedJobs.length;
+      default:
+        return 0;
+    }
+  }
+
+  getBannerCount(): number {
+    // Return the actual API total count for the current tab's banner
+    switch (this.currentTab) {
+      case 'available':
+        return this.apiTotalAvailableJobs;
+      case 'applied':
+        return this.apiTotalAppliedJobs;
+      case 'expired-rejected':
+        return this.apiTotalExpiredRejectedJobs;
+      default:
+        return 0;
     }
   }
 }

@@ -68,7 +68,7 @@
     <div class="results-summary" *ngIf="!loading">
       <div class="summary-content">
         <h2 class="results-count">
-          {{ totalJobs }} {{ totalJobs === 1 ? 'Job' : 'Jobs' }} Found
+          {{ getBannerCount() }} {{ getBannerCount() === 1 ? 'Job' : 'Jobs' }} Found
         </h2>
         <p class="results-description">
           Showing {{ currentCategory | uppercase }} jobs
@@ -91,7 +91,7 @@
       <app-pagination
         [currentPage]="currentPage"
         [totalPages]="totalPages"
-        [totalItems]="totalJobs"
+        [totalItems]="getBannerCount()"
         [itemsPerPage]="itemsPerPage"
         [disabled]="loading"
         (pageChange)="onPageChanged($event)">
