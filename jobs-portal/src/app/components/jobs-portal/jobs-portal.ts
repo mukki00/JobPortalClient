@@ -138,34 +138,55 @@ export class JobsPortalComponent implements OnInit {
   }
 
   private calculateTotalCounts() {
-    // Show counts based on locally updated jobs (including simulated updates)
-    const currentPageSize = this.jobs.length;
-    const totalJobs = this.totalJobs;
+    // Get accurate applied job count from database
+    console.log('Calculating total counts including database applied jobs...');
     
-    if (currentPageSize > 0 && totalJobs > 0) {
-      // Count jobs based on current local state (including simulated updates)
-      const availableCount = this.availableJobs.length;
-      const appliedCount = this.appliedJobs.length;
-      const expiredRejectedCount = this.expiredRejectedJobs.length;
-      
-      // For now, use actual counts from current page since API updates are local
-      // In a real scenario, you'd estimate based on percentages across all pages
-      this.totalAvailableJobs = totalJobs - appliedCount - expiredRejectedCount; // Estimate remaining available
-      this.totalAppliedJobs = appliedCount; // Use actual applied count from current page
-      this.totalExpiredRejectedJobs = expiredRejectedCount; // Use actual expired/rejected count
-      
-      this.countsCalculated = true;
-      
-      console.log('Total counts calculated from local state:', {
-        available: this.totalAvailableJobs,
-        applied: this.totalAppliedJobs,
-        expiredRejected: this.totalExpiredRejectedJobs,
-        totalJobs: totalJobs,
-        localApplied: appliedCount,
-        localExpiredRejected: expiredRejectedCount,
-        note: 'Counts include locally applied jobs (simulated updates)'
+    this.jobService.getAppliedJobs(1, 1000, this.currentCategory)
+      .subscribe({
+        next: (response: JobsResponse) => {
+          const databaseAppliedCount = response.totalJobs || response.jobs.length;
+          const localAppliedCount = this.appliedJobs.length;
+          const localExpiredRejectedCount = this.expiredRejectedJobs.length;
+          
+          // Calculate total applied jobs (database + local, avoiding duplicates)
+          const localAppliedIds = this.appliedJobs.map(job => job.JOB_ID);
+          const databaseAppliedIds = response.jobs.map(job => job.JOB_ID);
+          const uniqueLocalApplied = localAppliedIds.filter(id => !databaseAppliedIds.includes(id));
+          
+          this.totalAppliedJobs = databaseAppliedCount + uniqueLocalApplied.length;
+          this.totalExpiredRejectedJobs = localExpiredRejectedCount; // For now, only local
+          this.totalAvailableJobs = this.totalJobs - this.totalAppliedJobs - this.totalExpiredRejectedJobs;
+          
+          this.countsCalculated = true;
+          
+          console.log('Total counts calculated with database data:', {
+            available: this.totalAvailableJobs,
+            applied: this.totalAppliedJobs,
+            expiredRejected: this.totalExpiredRejectedJobs,
+            databaseApplied: databaseAppliedCount,
+            localApplied: localAppliedCount,
+            uniqueLocalApplied: uniqueLocalApplied.length,
+            totalJobs: this.totalJobs
+          });
+          
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error getting applied jobs count from database:', error);
+          // Fallback to local counts only
+          const availableCount = this.availableJobs.length;
+          const appliedCount = this.appliedJobs.length;
+          const expiredRejectedCount = this.expiredRejectedJobs.length;
+          
+          this.totalAvailableJobs = this.totalJobs - appliedCount - expiredRejectedCount;
+          this.totalAppliedJobs = appliedCount;
+          this.totalExpiredRejectedJobs = expiredRejectedCount;
+          this.countsCalculated = true;
+          
+          console.log('Fallback: using local counts only');
+          this.cdr.detectChanges();
+        }
       });
-    }
   }
 
   private categorizeJobs() {
@@ -214,39 +235,55 @@ export class JobsPortalComponent implements OnInit {
   }
 
   private loadJobsByStatus(status: 'applied' | 'expired-rejected') {
-    // Since the backend API updates are not working yet (they're simulated),
-    // we'll show jobs from the current page that match the status
-    console.log(`Loading jobs by status: ${status} from current page`);
-    console.log('Current job statuses:', this.jobs.map(job => ({
-      id: job.JOB_ID,
-      title: job.JOB_TITLE?.substring(0, 30),
-      applied: job.APPLIED,
-      rejected: job.REJECTED,
-      expired: job.EXPIRED
-    })));
-    
-    let filteredJobs: Job[] = [];
+    this.loading = true;
+    console.log(`Loading jobs by status: ${status}`);
     
     if (status === 'applied') {
-      filteredJobs = this.appliedJobs;
-      console.log(`Applied jobs array:`, this.appliedJobs.map(job => ({
-        id: job.JOB_ID,
-        title: job.JOB_TITLE?.substring(0, 30),
-        applied: job.APPLIED
-      })));
-      console.log(`Found ${filteredJobs.length} applied jobs from current page`);
+      // Load applied jobs from database AND include locally applied jobs
+      this.jobService.getAppliedJobs(1, 100, this.currentCategory)
+        .subscribe({
+          next: (response: JobsResponse) => {
+            const databaseAppliedJobs = response.jobs;
+            console.log(`Loaded ${databaseAppliedJobs.length} applied jobs from database`);
+            
+            // Get locally applied jobs from current page
+            const locallyAppliedJobs = this.appliedJobs;
+            console.log(`Found ${locallyAppliedJobs.length} locally applied jobs`);
+            
+            // Combine database and local applied jobs, avoiding duplicates
+            const allAppliedJobs = [...databaseAppliedJobs];
+            
+            // Add locally applied jobs that aren't already in database results
+            locallyAppliedJobs.forEach(localJob => {
+              const existsInDatabase = databaseAppliedJobs.some(dbJob => dbJob.JOB_ID === localJob.JOB_ID);
+              if (!existsInDatabase) {
+                allAppliedJobs.push(localJob);
+              }
+            });
+            
+            this.displayedJobs = allAppliedJobs;
+            this.loading = false;
+            
+            console.log(`Total applied jobs displayed: ${allAppliedJobs.length} (${databaseAppliedJobs.length} from DB + ${locallyAppliedJobs.length} local, ${allAppliedJobs.length - databaseAppliedJobs.length - locallyAppliedJobs.length} duplicates removed)`);
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            console.error('Error loading applied jobs from database:', error);
+            // Fallback to locally applied jobs only
+            this.displayedJobs = this.appliedJobs;
+            this.loading = false;
+            console.log(`Fallback: showing ${this.appliedJobs.length} locally applied jobs only`);
+            this.cdr.detectChanges();
+          }
+        });
     } else if (status === 'expired-rejected') {
-      filteredJobs = this.expiredRejectedJobs;
-      console.log(`Found ${filteredJobs.length} expired/rejected jobs from current page`);
+      // For now, show local expired/rejected jobs
+      // TODO: Implement database endpoint for expired/rejected jobs if needed
+      this.displayedJobs = this.expiredRejectedJobs;
+      this.loading = false;
+      console.log(`Found ${this.expiredRejectedJobs.length} expired/rejected jobs from current page`);
+      this.cdr.detectChanges();
     }
-    
-    this.displayedJobs = filteredJobs;
-    
-    if (filteredJobs.length === 0) {
-      console.log(`No ${status} jobs found on current page.`);
-    }
-    
-    this.cdr.detectChanges();
   }
 
   getTabCount(tab: 'available' | 'applied' | 'expired-rejected'): number {

@@ -186,6 +186,70 @@ export class JobService {
   }
 
   /**
+   * Get applied jobs from the database
+   */
+  getAppliedJobs(page: number = 1, perPage: number = 50, category: string = 'Recommended'): Observable<JobsResponse> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('per_page', perPage.toString());
+    
+    if (category && category !== 'all') {
+      params = params.set('job_category', category);
+    }
+
+    const url = `${this.baseUrl}/jobs/apply`;
+    
+    return new Observable<JobsResponse>(observer => {
+      this.http.get<any>(url, { params }).subscribe({
+        next: (apiResponse) => {
+          console.log('Applied jobs API response:', apiResponse);
+          
+          // Transform API response to match JobsResponse interface
+          const totalJobs = apiResponse.total || 0;
+          const currentPage = apiResponse.page || page;
+          const totalPages = Math.ceil(totalJobs / perPage);
+          
+          // Ensure all jobs have status fields
+          const jobsWithStatus = (apiResponse.jobs || []).map((job: any) => ({
+            ...job,
+            APPLIED: job.APPLIED || "Y", // These should already be Y since they're from applied endpoint
+            REJECTED: job.REJECTED || "N",
+            EXPIRED: job.EXPIRED || "N"
+          }));
+          
+          const transformedResponse: JobsResponse = {
+            jobs: jobsWithStatus,
+            totalJobs: totalJobs,
+            currentPage: currentPage,
+            totalPages: totalPages,
+            perPage: apiResponse.per_page || perPage,
+            hasNext: currentPage < totalPages,
+            hasPrevious: currentPage > 1
+          };
+          
+          observer.next(transformedResponse);
+          observer.complete();
+        },
+        error: (error) => {
+          console.error('Error fetching applied jobs:', error);
+          // Return empty response on error
+          const emptyResponse: JobsResponse = {
+            jobs: [],
+            totalJobs: 0,
+            currentPage: page,
+            totalPages: 0,
+            perPage: perPage,
+            hasNext: false,
+            hasPrevious: false
+          };
+          observer.next(emptyResponse);
+          observer.complete();
+        }
+      });
+    });
+  }
+
+  /**
    * Mock data for development/demo purposes
    */
   private getMockJobsResponse(page: number, perPage: number, category: string): JobsResponse {
