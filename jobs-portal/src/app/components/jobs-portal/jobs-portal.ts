@@ -119,39 +119,63 @@ export class JobsPortalComponent implements OnInit {
   }
 
   private calculateTotalCounts() {
-    // Get accurate applied job count from database
-    this.jobService.getAppliedJobs(1, 1000, this.currentCategory)
-      .subscribe({
-        next: (response: JobsResponse) => {
-          const databaseAppliedCount = response.totalJobs || response.jobs.length;
-          const localAppliedCount = this.appliedJobs.length;
-          const localExpiredRejectedCount = this.expiredRejectedJobs.length;
-          
-          // Calculate total applied jobs (database + local, avoiding duplicates)
-          const localAppliedIds = this.appliedJobs.map(job => job.JOB_ID);
-          const databaseAppliedIds = response.jobs.map(job => job.JOB_ID);
-          const uniqueLocalApplied = localAppliedIds.filter(id => !databaseAppliedIds.includes(id));
-          
-          this.totalAppliedJobs = databaseAppliedCount + uniqueLocalApplied.length;
-          this.totalExpiredRejectedJobs = localExpiredRejectedCount;
-          this.totalAvailableJobs = this.totalJobs - this.totalAppliedJobs - this.totalExpiredRejectedJobs;
-          
-          this.countsCalculated = true;
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          // Fallback to local counts only
-          const availableCount = this.availableJobs.length;
-          const appliedCount = this.appliedJobs.length;
-          const expiredRejectedCount = this.expiredRejectedJobs.length;
-          
-          this.totalAvailableJobs = this.totalJobs - appliedCount - expiredRejectedCount;
-          this.totalAppliedJobs = appliedCount;
-          this.totalExpiredRejectedJobs = expiredRejectedCount;
-          this.countsCalculated = true;
-          this.cdr.detectChanges();
-        }
-      });
+    // Get accurate counts from both applied and rejected/expired database endpoints
+    const appliedRequest = this.jobService.getAppliedJobs(1, 1000, this.currentCategory);
+    const rejectedExpiredRequest = this.jobService.getRejectedExpiredJobs(1, 1000, this.currentCategory);
+    
+    // Wait for both requests to complete
+    appliedRequest.subscribe({
+      next: (appliedResponse: JobsResponse) => {
+        const databaseAppliedCount = appliedResponse.totalJobs || appliedResponse.jobs.length;
+        const localAppliedCount = this.appliedJobs.length;
+        
+        // Calculate unique local applied jobs
+        const localAppliedIds = this.appliedJobs.map(job => job.JOB_ID);
+        const databaseAppliedIds = appliedResponse.jobs.map(job => job.JOB_ID);
+        const uniqueLocalApplied = localAppliedIds.filter(id => !databaseAppliedIds.includes(id));
+        
+        this.totalAppliedJobs = databaseAppliedCount + uniqueLocalApplied.length;
+        
+        // Now get rejected/expired counts
+        rejectedExpiredRequest.subscribe({
+          next: (rejectedResponse: JobsResponse) => {
+            const databaseRejectedExpiredCount = rejectedResponse.totalJobs || rejectedResponse.jobs.length;
+            const localRejectedExpiredCount = this.expiredRejectedJobs.length;
+            
+            // Calculate unique local rejected/expired jobs
+            const localRejectedExpiredIds = this.expiredRejectedJobs.map(job => job.JOB_ID);
+            const databaseRejectedExpiredIds = rejectedResponse.jobs.map(job => job.JOB_ID);
+            const uniqueLocalRejectedExpired = localRejectedExpiredIds.filter(id => !databaseRejectedExpiredIds.includes(id));
+            
+            this.totalExpiredRejectedJobs = databaseRejectedExpiredCount + uniqueLocalRejectedExpired.length;
+            this.totalAvailableJobs = this.totalJobs - this.totalAppliedJobs - this.totalExpiredRejectedJobs;
+            
+            this.countsCalculated = true;
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            // Use local count for rejected/expired if database call fails
+            this.totalExpiredRejectedJobs = this.expiredRejectedJobs.length;
+            this.totalAvailableJobs = this.totalJobs - this.totalAppliedJobs - this.totalExpiredRejectedJobs;
+            
+            this.countsCalculated = true;
+            this.cdr.detectChanges();
+          }
+        });
+      },
+      error: (error) => {
+        // Fallback to local counts only for both
+        const availableCount = this.availableJobs.length;
+        const appliedCount = this.appliedJobs.length;
+        const expiredRejectedCount = this.expiredRejectedJobs.length;
+        
+        this.totalAvailableJobs = this.totalJobs - appliedCount - expiredRejectedCount;
+        this.totalAppliedJobs = appliedCount;
+        this.totalExpiredRejectedJobs = expiredRejectedCount;
+        this.countsCalculated = true;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private categorizeJobs() {
@@ -232,10 +256,37 @@ export class JobsPortalComponent implements OnInit {
           }
         });
     } else if (status === 'expired-rejected') {
-      // For now, show local expired/rejected jobs
-      this.displayedJobs = this.expiredRejectedJobs;
-      this.loading = false;
-      this.cdr.detectChanges();
+      // Load rejected/expired jobs from database AND include locally rejected/expired jobs
+      this.jobService.getRejectedExpiredJobs(1, 100, this.currentCategory)
+        .subscribe({
+          next: (response: JobsResponse) => {
+            const databaseRejectedExpiredJobs = response.jobs;
+            
+            // Get locally rejected/expired jobs from current page
+            const locallyRejectedExpiredJobs = this.expiredRejectedJobs;
+            
+            // Combine database and local rejected/expired jobs, avoiding duplicates
+            const allRejectedExpiredJobs = [...databaseRejectedExpiredJobs];
+            
+            // Add locally rejected/expired jobs that aren't already in database results
+            locallyRejectedExpiredJobs.forEach(localJob => {
+              const existsInDatabase = databaseRejectedExpiredJobs.some(dbJob => dbJob.JOB_ID === localJob.JOB_ID);
+              if (!existsInDatabase) {
+                allRejectedExpiredJobs.push(localJob);
+              }
+            });
+            
+            this.displayedJobs = allRejectedExpiredJobs;
+            this.loading = false;
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            // Fallback to locally rejected/expired jobs only
+            this.displayedJobs = this.expiredRejectedJobs;
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
+        });
     }
   }
 
