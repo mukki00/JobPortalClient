@@ -67,6 +67,11 @@ export class JobsPortalComponent implements OnInit {
     // Reset total counts for new category
     this.countsCalculated = false;
     
+    // Reset API totals for new category to prevent showing old category counts
+    this.apiTotalAvailableJobs = 0;
+    this.apiTotalAppliedJobs = 0;
+    this.apiTotalExpiredRejectedJobs = 0;
+    
     this.jobService.setCurrentCategory(category);
     this.jobService.setCurrentPage(1);
     this.loadJobs();
@@ -102,6 +107,11 @@ export class JobsPortalComponent implements OnInit {
           // Calculate total counts only once per category
           if (!this.countsCalculated) {
             this.calculateTotalCounts();
+          }
+          
+          // If currently on applied or expired-rejected tab, reload that tab's data
+          if (this.currentTab === 'applied' || this.currentTab === 'expired-rejected') {
+            this.loadJobsByStatus(this.currentTab);
           }
           
           this.cdr.detectChanges();
